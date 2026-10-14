@@ -1,0 +1,14 @@
+# Сборка
+target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# Прочее
+*.log
+.DS_Store
