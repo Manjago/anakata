@@ -13,7 +13,8 @@ class SplitMix64Test {
 
     /**
      * Эталонные значения nextLong() для seed 0 сверены с референсной реализацией
-     * SplitMix64 (Sebastiano Vigna, https://prng.di.unimi.it/splitmix64.c).
+     * SplitMix64 (Sebastiano Vigna, https://prng.di.unimi.it/splitmix64.c). Сам
+     * алгоритм предложили Гай Стил, Дуг Ли и Кристин Флад в 2014 году.
      *
      * <p>Формула из первоисточника идентична реализации {@link SplitMix64}. Значения
      * получены независимым прогоном C-версии из источника и в беззнаковом виде равны
@@ -112,12 +113,19 @@ class SplitMix64Test {
     }
 
     @Test
-    void nextBooleanIsBoolean() {
+    void nextBooleanYieldsBothValues() {
         SplitMix64 rng = new SplitMix64(9L);
-        for (int i = 0; i < 1000; i++) {
-            boolean b = rng.nextBoolean();
-            assertTrue(b == true || b == false);
+        boolean sawTrue = false;
+        boolean sawFalse = false;
+        for (int i = 0; i < 10_000; i++) {
+            if (rng.nextBoolean()) {
+                sawTrue = true;
+            } else {
+                sawFalse = true;
+            }
         }
+        assertTrue(sawTrue, "nextBoolean() не дал ни одного true");
+        assertTrue(sawFalse, "nextBoolean() не дал ни одного false");
     }
 
     @Test
