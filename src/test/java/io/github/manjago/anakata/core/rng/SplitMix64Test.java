@@ -29,6 +29,21 @@ class SplitMix64Test {
         assertEquals(-537132696929009172L, rng.nextLong());
     }
 
+    /**
+     * Эталонные значения nextLong() для сида 1234567 сверены с референсной реализацией
+     * SplitMix64 (Sebastiano Vigna, https://prng.di.unimi.it/splitmix64.c). Значения
+     * получены независимым прогоном C-версии из источника и в беззнаковом виде равны
+     * 0x599ed017fb08fc85, 0x2c73f08458540fa5, 0x883ebce5a3f27c77, 0x3fbef740e9177b3f.
+     */
+    @Test
+    void seedNonZeroMatchesReferenceImplementation() {
+        SplitMix64 rng = new SplitMix64(1234567L);
+        assertEquals(6457827717110365317L, rng.nextLong());
+        assertEquals(3203168211198807973L, rng.nextLong());
+        assertEquals(-8629252141511181193L, rng.nextLong());
+        assertEquals(4593380528125082431L, rng.nextLong());
+    }
+
     @Test
     void sameSeedYieldsSameSequence() {
         long seed = 0xCAFEBABE12345678L;
