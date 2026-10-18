@@ -10,7 +10,7 @@ package io.github.manjago.anakata.core.rng;
  * сечением {@code 0x9E3779B97F4A7C15}. Простой один-long-алгоритм даёт достаточно
  * качественную последовательность для генерации лабиринта, ориентиров и букв.
  */
-public final class SplitMix64 implements Rng {
+public final class SplitMix64 {
 
     private static final long GOLDEN_GAMMA = 0x9E3779B97F4A7C15L;
 
@@ -24,19 +24,7 @@ public final class SplitMix64 implements Rng {
         s = seed;
     }
 
-    /** Создаёт генератор, восстановленный из снимка состояния. */
-    public SplitMix64(SplitMix64State state) {
-        s = state.s();
-    }
-
-    /** Снимок текущего состояния генератора. */
-    @Override
-    public SplitMix64State state() {
-        return new SplitMix64State(s);
-    }
-
     /** Следующее 64-битное псевдослучайное значение. */
-    @Override
     public long nextLong() {
         return mix(s += GOLDEN_GAMMA);
     }
@@ -54,7 +42,6 @@ public final class SplitMix64 implements Rng {
     }
 
     /** Следующее псевдослучайное значение из диапазона {@code [0, bound)}, {@code bound > 0}. */
-    @Override
     public long nextLong(long bound) {
         if (bound <= 0) {
             throw new IllegalArgumentException("bound должен быть положительным: " + bound);
@@ -75,7 +62,6 @@ public final class SplitMix64 implements Rng {
     }
 
     /** Следующее псевдослучайное значение из диапазона {@code [0, bound)}, {@code bound > 0}. */
-    @Override
     public int nextInt(int bound) {
         if (bound <= 0) {
             throw new IllegalArgumentException("bound должен быть положительным: " + bound);
@@ -84,7 +70,6 @@ public final class SplitMix64 implements Rng {
     }
 
     /** Следующее псевдослучайное логическое значение. */
-    @Override
     public boolean nextBoolean() {
         return (nextLong() < 0);
     }

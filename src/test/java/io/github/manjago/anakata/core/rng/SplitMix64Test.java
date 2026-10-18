@@ -67,34 +67,6 @@ class SplitMix64Test {
     }
 
     @Test
-    void restoredStateContinuesSequence() {
-        long seed = 42L;
-        SplitMix64 original = new SplitMix64(seed);
-        for (int i = 0; i < 100; i++) {
-            original.nextLong();
-        }
-        SplitMix64State snapshot = original.state();
-
-        SplitMix64 restored = new SplitMix64(snapshot);
-        for (int i = 0; i < 1000; i++) {
-            assertEquals(original.nextLong(), restored.nextLong(), "восстановление разошлось на шаге " + i);
-        }
-    }
-
-    @Test
-    void stateIsIndependentSnapshot() {
-        SplitMix64 rng = new SplitMix64(7L);
-        rng.nextLong();
-        SplitMix64State snapshot = rng.state();
-        rng.nextLong();
-        // Снимок не меняется при дальнейшей генерации исходного генератора.
-        SplitMix64 fromSnapshot = new SplitMix64(snapshot);
-        SplitMix64 expected = new SplitMix64(7L);
-        expected.nextLong(); // та же точка, что и snapshot
-        assertEquals(expected.nextLong(), fromSnapshot.nextLong());
-    }
-
-    @Test
     void nextLongBoundedStaysInRange() {
         SplitMix64 rng = new SplitMix64(123L);
         long[] bounds = {1, 2, 7, 10, 100, 1000, Long.MAX_VALUE};
