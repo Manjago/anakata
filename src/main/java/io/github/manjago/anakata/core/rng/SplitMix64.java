@@ -38,7 +38,16 @@ public final class SplitMix64 implements Rng {
     /** Следующее 64-битное псевдослучайное значение. */
     @Override
     public long nextLong() {
-        long z = s += GOLDEN_GAMMA;
+        return mix(s += GOLDEN_GAMMA);
+    }
+
+    /**
+     * Разболтка 64-битного значения — стандартная битовая смесь SplitMix64.
+     *
+     * <p>Применяется и в {@link #nextLong()} для преобразования продвинутого состояния
+     * в выходное значение, и в {@link Seeders} для свёртки имени сидератора.
+     */
+    static long mix(long z) {
         z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
         z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
         return z ^ (z >>> 31);
