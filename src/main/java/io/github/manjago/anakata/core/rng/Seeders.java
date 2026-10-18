@@ -14,18 +14,31 @@ public final class Seeders {
     }
 
     /**
+     * Возвращает сид ответвления {@code name} от базового сида {@code seed}.
+     *
+     * <p>Это {@code mix(seed ^ hashName(name))}: свёртка базового сида и хеша имени.
+     * Результат — обычный {@code long}, им можно продолжить иерархию веток
+     * (например, снова передать в {@code derive} с другим именем) или построить из
+     * него генератор. Разные имена у одного сида дают разные, не пересекающиеся потоки.
+     *
+     * @param seed  базовый сид
+     * @param name  имя потока, например {@code "maze"} или {@code "letters"}
+     * @return сид ответвления
+     */
+    public static long derive(long seed, String name) {
+        return SplitMix64.mix(seed ^ hashName(name));
+    }
+
+    /**
      * Возвращает новый генератор — ответвление базового сида {@code seed} с именем
      * {@code name}.
      *
-     * <p>Сид ветки — свёртка базового сида и хеша имени: {@code mix(seed ^ hash)}.
-     * Разные имена у одного сида дают разные, не пересекающиеся потоки.
-     *
-     * @param seed  базовый сид уровня или ответвления
+     * @param seed  базовый сид
      * @param name  имя потока, например {@code "maze"} или {@code "letters"}
      * @return новый генератор-сидератор
      */
     public static SplitMix64 branch(long seed, String name) {
-        return new SplitMix64(SplitMix64.mix(seed ^ hashName(name)));
+        return new SplitMix64(derive(seed, name));
     }
 
     /**

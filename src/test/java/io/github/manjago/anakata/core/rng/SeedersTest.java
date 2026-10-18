@@ -46,4 +46,42 @@ class SeedersTest {
         SplitMix64 maze = Seeders.branch(seed, "maze");
         assertEquals(8530126917174426528L, maze.nextLong());
     }
+
+    @Test
+    void deriveIsDeterministicAndNamesDiffer() {
+        long seed = 42L;
+        assertEquals(Seeders.derive(seed, "maze"), Seeders.derive(seed, "maze"),
+                "derive не детерминирован для одного сида и имени");
+        assertNotEquals(Seeders.derive(seed, "maze"), Seeders.derive(seed, "letters"),
+                "derive дал одинаковый сид для разных имён");
+    }
+
+    @Test
+    void deriveFeedsBranchAndHierarchy() {
+        // branch — это генератор из derive; производный сид можно снова развести деревом.
+        long seed = 42L;
+        long mazeSeed = Seeders.derive(seed, "maze");
+        SplitMix64 fromDerive = new SplitMix64(mazeSeed);
+        SplitMix64 fromBranch = Seeders.branch(seed, "maze");
+        for (int i = 0; i < 1000; i++) {
+            assertEquals(fromDerive.nextLong(), fromBranch.nextLong(),
+                    "branch и derive(generator) разошлись на шаге " + i);
+        }
+    }
+
+    @Test
+    void deriveIsHierarchical() {
+        // Результат derive — обычный long: его можно снова развести деревом.
+        long seed = 42L;
+        long maze = Seeders.derive(seed, "maze");
+        long wordFromMaze = Seeders.derive(maze, "word");
+        long lettersFromMaze = Seeders.derive(maze, "letters");
+        assertNotEquals(maze, wordFromMaze);
+        assertNotEquals(wordFromMaze, lettersFromMaze);
+
+        // Ветка от ветки детерминированна: тот же путь — тот же поток.
+        long maze2 = Seeders.derive(seed, "maze");
+        long wordFromMaze2 = Seeders.derive(maze2, "word");
+        assertEquals(wordFromMaze, wordFromMaze2);
+    }
 }
