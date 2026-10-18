@@ -30,10 +30,11 @@ class SplitMix64Test {
     }
 
     /**
-     * Эталонные значения nextLong() для сида 1234567 сверены с референсной реализацией
-     * SplitMix64 (Sebastiano Vigna, https://prng.di.unimi.it/splitmix64.c). Значения
-     * получены независимым прогоном C-версии из источника и в беззнаковом виде равны
-     * 0x599ed017fb08fc85, 0x2c73f08458540fa5, 0x883ebce5a3f27c77, 0x3fbef740e9177b3f.
+     * Эталонные значения nextLong() для сида 1234567 сверены с официальной референсной
+     * реализацией SplitMix64 (Sebastiano Vigna, https://prng.di.unimi.it/splitmix64.c):
+     * C-версия из источника скомпилирована и запущена, результаты совпали. В беззнаковом
+     * виде значения равны 0x599ed017fb08fc85, 0x2c73f08458540fa5, 0x883ebce5a3f27c77,
+     * 0x3fbef740e9177b3f.
      */
     @Test
     void seedNonZeroMatchesReferenceImplementation() {
