@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.SplittableRandom;
 import org.junit.jupiter.api.Test;
 
 class SplitMix64Test {
@@ -79,18 +80,6 @@ class SplitMix64Test {
     }
 
     @Test
-    void nextIntBoundedStaysInRange() {
-        SplitMix64 rng = new SplitMix64(321L);
-        int[] bounds = {1, 2, 5, 97, 1000};
-        for (int bound : bounds) {
-            for (int i = 0; i < 10_000; i++) {
-                int v = rng.nextInt(bound);
-                assertTrue(v >= 0 && v < bound, "значение вне [0, " + bound + "): " + v);
-            }
-        }
-    }
-
-    @Test
     void boundedProducesAllValues() {
         SplitMix64 rng = new SplitMix64(0xDEADBEEFL);
         Set<Long> seen = new HashSet<>();
@@ -101,28 +90,10 @@ class SplitMix64Test {
     }
 
     @Test
-    void nextBooleanYieldsBothValues() {
-        SplitMix64 rng = new SplitMix64(9L);
-        boolean sawTrue = false;
-        boolean sawFalse = false;
-        for (int i = 0; i < 10_000; i++) {
-            if (rng.nextBoolean()) {
-                sawTrue = true;
-            } else {
-                sawFalse = true;
-            }
-        }
-        assertTrue(sawTrue, "nextBoolean() не дал ни одного true");
-        assertTrue(sawFalse, "nextBoolean() не дал ни одного false");
-    }
-
-    @Test
     void rejectsNonPositiveBound() {
         SplitMix64 rng = new SplitMix64(1L);
         assertThrows(IllegalArgumentException.class, () -> rng.nextLong(0));
         assertThrows(IllegalArgumentException.class, () -> rng.nextLong(-1));
-        assertThrows(IllegalArgumentException.class, () -> rng.nextInt(0));
-        assertThrows(IllegalArgumentException.class, () -> rng.nextInt(-5));
     }
 
     @Test
@@ -130,6 +101,101 @@ class SplitMix64Test {
         SplitMix64 rng = new SplitMix64(1L);
         for (int i = 0; i < 100; i++) {
             assertEquals(0, rng.nextLong(1));
+        }
+    }
+
+    /**
+     * {@code bound == 1} не короткое замыкание: диапазонный вызов тратит один
+     * выход генератора, как в JDK, поэтому следующий {@link SplitMix64#nextLong()}
+     * возвращает уже второй выход потока.
+     */
+    @Test
+    void boundOneConsumesOneDraw() {
+        SplitMix64 rng = new SplitMix64(0L);
+        assertEquals(0L, rng.nextLong(1));
+        assertEquals(7960286522194355700L, rng.nextLong());
+    }
+
+    /**
+     * Диапазонные значения сверены с JDK-референсом того же алгоритма —
+     * {@code SplittableRandom} ({@code RandomSupport.boundedNextLong}). Значения
+     * сняты прогоном JDK, а не нашим кодом, и зафиксированы здесь как контракт,
+     * чтобы тест не зависел от версии рантайма. Покрыты {@code bound == 1},
+     * степени двойки, {@code (1L << 62) + 1} и {@link Long#MAX_VALUE}.
+     */
+    @Test
+    void boundedValuesMatchReferenceImplementation() {
+        assertBounded(0L, 1L, 0L, 0L, 0L, 0L);
+        assertBounded(0L, 2L, 1L, 0L, 1L, 0L);
+        assertBounded(0L, 3L, 0L, 0L, 0L, 2L);
+        assertBounded(0L, 4L, 3L, 0L, 3L, 0L);
+        assertBounded(0L, 7L, 4L, 4L, 4L, 2L);
+        assertBounded(0L, 10L, 7L, 0L, 9L, 2L);
+        assertBounded(0L, 1000L, 767L, 850L, 839L, 222L);
+        assertBounded(0L, 1024L, 431L, 500L, 335L, 492L);
+        assertBounded(0L, (1L << 62) + 1,
+                3980143261097177850L, 243808509735772839L,
+                980875101213047373L, 3019047300631581045L);
+        assertBounded(0L, Long.MAX_VALUE,
+                8147104208329303767L, 3980143261097177850L,
+                243808509735772839L, 8954805688390271222L);
+        assertBounded(1234567L, 2L, 1L, 1L, 1L, 1L);
+        assertBounded(1234567L, 3L, 1L, 0L, 1L, 0L);
+        assertBounded(1234567L, 4L, 1L, 1L, 3L, 3L);
+        assertBounded(1234567L, 7L, 0L, 4L, 1L, 1L);
+        assertBounded(1234567L, 1000L, 658L, 986L, 211L, 215L);
+        assertBounded(1234567L, 1024L, 133L, 933L, 119L, 831L);
+        assertBounded(-1L, 1L, 0L, 0L, 0L, 0L);
+        assertBounded(-1L, 2L, 0L, 1L, 1L, 0L);
+        assertBounded(-1L, 3L, 1L, 1L, 0L, 0L);
+        assertBounded(-1L, 4L, 0L, 1L, 1L, 2L);
+        assertBounded(-1L, 7L, 0L, 0L, 3L, 3L);
+        assertBounded(-1L, 10L, 8L, 4L, 0L, 1L);
+        assertBounded(-1L, 1000L, 968L, 484L, 500L, 921L);
+        assertBounded(-1L, 1024L, 32L, 713L, 489L, 722L);
+        assertBounded(-1L, (1L << 62) + 1,
+                2024363799162208500L, 3931318902156738921L,
+                2319021877215838258L, 112353042671515406L);
+        assertBounded(-1L, Long.MAX_VALUE,
+                8245168133484221968L, 8417223528544944484L,
+                2024363799162208500L, 3931318902156738921L);
+    }
+
+    private static void assertBounded(long seed, long bound, long... expected) {
+        SplitMix64 rng = new SplitMix64(seed);
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i], rng.nextLong(bound),
+                    "сид " + seed + ", bound " + bound + ", шаг " + i);
+        }
+    }
+
+    /**
+     * Дифференциальная проверка против {@link SplittableRandom}: значения в
+     * диапазоне совпадают на каждом шаге, и после серии состояние генераторов
+     * синхронно (обе стороны потребили одинаковое число выходов).
+     *
+     * <p>Если падает только этот тест, а зашитый
+     * {@code boundedValuesMatchReferenceImplementation} проходит — изменился JDK.
+     * {@code nextLong(bound)} в таком случае не чинить: пересмотр семантики
+     * ломает уже опубликованные сиды.
+     */
+    @Test
+    void boundedValuesMatchSplittableRandom() {
+        long[] seeds = {0L, 1234567L, -1L, 0xCAFEBABE12345678L};
+        long[] bounds = {1L, 2L, 3L, 4L, 7L, 10L, 1000L, 1024L, (1L << 62) + 1, Long.MAX_VALUE};
+        for (long seed : seeds) {
+            for (long bound : bounds) {
+                SplitMix64 ours = new SplitMix64(seed);
+                SplittableRandom reference = new SplittableRandom(seed);
+                for (int i = 0; i < 1000; i++) {
+                    assertEquals(reference.nextLong(bound), ours.nextLong(bound),
+                            "разошлось с JDK: сид " + seed + ", bound " + bound + ", шаг " + i
+                                    + " — изменился JDK, nextLong(bound) не чинить");
+                }
+                assertEquals(reference.nextLong(), ours.nextLong(),
+                        "состояние разошлось с JDK после сид " + seed + ", bound " + bound
+                                + " — изменился JDK, nextLong(bound) не чинить");
+            }
         }
     }
 }

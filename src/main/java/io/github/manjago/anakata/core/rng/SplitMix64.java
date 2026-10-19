@@ -41,36 +41,34 @@ public final class SplitMix64 {
         return z ^ (z >>> 31);
     }
 
-    /** Следующее псевдослучайное значение из диапазона {@code [0, bound)}, {@code bound > 0}. */
+    /**
+     * Следующее псевдослучайное значение из диапазона {@code [0, bound)},
+     * {@code bound > 0}.
+     *
+     * <p>Повторяет {@code jdk.internal.util.random.RandomSupport.boundedNextLong}
+     * из JDK 25. На каждый вызов тратится хотя бы один выход {@link #nextLong()},
+     * в том числе при {@code bound == 1}.
+     *
+     * <p>Контракт зафиксирован эталонными значениями в
+     * {@code boundedValuesMatchReferenceImplementation}. При расхождении с JDK
+     * метод не менять: пересмотр семантики ломает уже опубликованные сиды.
+     */
     public long nextLong(long bound) {
         if (bound <= 0) {
             throw new IllegalArgumentException("bound должен быть положительным: " + bound);
         }
-        if (bound == 1) {
-            return 0;
-        }
-        long r;
-        long u;
         long m = bound - 1;
-        // Безбиасовый выбор значения из [0, bound): берём равномерное число из
-        // [0, 2^63) и отсекаем «хвост», где остаток был бы смещён.
-        do {
-            u = nextLong() >>> 1;
-            r = u % bound;
-        } while (u - r + m < 0);
-        return r;
-    }
-
-    /** Следующее псевдослучайное значение из диапазона {@code [0, bound)}, {@code bound > 0}. */
-    public int nextInt(int bound) {
-        if (bound <= 0) {
-            throw new IllegalArgumentException("bound должен быть положительным: " + bound);
+        long r = nextLong();
+        if ((bound & m) == 0L) {
+            // Степень двойки: младшие биты равномерны, лишние отбрасываем маской.
+            r &= m;
+        } else {
+            // Безбиасовый выбор из [0, bound): берём равномерное число из [0, 2^63)
+            // и отсекаем «хвост», где остаток был бы смещён.
+            for (long u = r >>> 1; u + m - (r = u % bound) < 0L; u = nextLong() >>> 1) {
+                // Пустое тело — слово в слово как в JDK, для сверки с исходником.
+            }
         }
-        return (int) nextLong(bound);
-    }
-
-    /** Следующее псевдослучайное логическое значение. */
-    public boolean nextBoolean() {
-        return (nextLong() < 0);
+        return r;
     }
 }
