@@ -16,7 +16,7 @@
 - Для коммитов, которые пишет агент, добавляется соавтор:
 
   ```text
-  Co-authored-by: DeepSeek 4 Flash <noreply@deepseek.com>
+  Co-authored-by: DeepSeek 4.1 Flash <noreply@deepseek.com>
   ```
 
 - Перед коммитом агент всегда показывает пользователю diff на ревью и ждёт подтверждения.
