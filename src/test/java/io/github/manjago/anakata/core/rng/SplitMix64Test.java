@@ -190,11 +190,13 @@ class SplitMix64Test {
                 for (int i = 0; i < 1000; i++) {
                     assertEquals(reference.nextLong(bound), ours.nextLong(bound),
                             "разошлось с JDK: сид " + seed + ", bound " + bound + ", шаг " + i
-                                    + " — изменился JDK, nextLong(bound) не чинить");
+                                    + " — если boundedValuesMatchReferenceImplementation проходит,"
+                                    + " изменился JDK, nextLong(bound) не чинить");
                 }
                 assertEquals(reference.nextLong(), ours.nextLong(),
                         "состояние разошлось с JDK после сид " + seed + ", bound " + bound
-                                + " — изменился JDK, nextLong(bound) не чинить");
+                                + " — если boundedValuesMatchReferenceImplementation проходит,"
+                                + " изменился JDK, nextLong(bound) не чинить");
             }
         }
     }
