@@ -12,8 +12,14 @@ class MazeGeneratorTest {
 
     private final MazeGenerator generator = new BacktrackerMazeGenerator();
 
+    /**
+     * Четыре свойства лабиринта из контракта дизайна разом и для N = 2, 3, 4:
+     * все клетки достижимы из старта (BFS), проходов ровно на один меньше числа
+     * клеток, тот же сид даёт тот же лабиринт, и всё это работает в каждой
+     * размерности.
+     */
     @Test
-    void generatesConnectedPerfectMaze() {
+    void satisfiesMazeProperties() {
         Grid[] grids = {
                 new Grid(2, 7),
                 new Grid(6, 6),
@@ -24,11 +30,13 @@ class MazeGeneratorTest {
         for (Grid grid : grids) {
             for (long seed : seeds) {
                 Maze maze = generator.generate(grid, Seeders.branch(seed, Seeders.Branch.MAZE));
+                Maze repeat = generator.generate(grid, Seeders.branch(seed, Seeders.Branch.MAZE));
                 assertConnected(grid, maze);
                 assertSymmetricAndInside(grid, maze);
                 assertEquals(grid.cells() - 1, maze.passageCount(),
                         "идеальный лабиринт должен быть деревом для решётки " + grid
                                 + " и сида " + seed);
+                assertSameMaze(grid, maze, repeat);
             }
         }
     }
@@ -62,13 +70,11 @@ class MazeGeneratorTest {
         }
     }
 
-    @Test
-    void sameSeedYieldsSameMaze() {
-        Grid grid = new Grid(5, 5, 5);
-        Maze first = generator.generate(grid, Seeders.branch(7L, Seeders.Branch.MAZE));
-        Maze second = generator.generate(grid, Seeders.branch(7L, Seeders.Branch.MAZE));
+    /** Тот же сид должен давать тот же лабиринт — побитово те же маски. */
+    private static void assertSameMaze(Grid grid, Maze first, Maze second) {
         for (int cell = 0; cell < grid.cells(); cell++) {
-            assertEquals(first.mask(cell), second.mask(cell), "маски разошлись на клетке " + cell);
+            assertEquals(first.mask(cell), second.mask(cell),
+                    "тот же сид дал разный лабиринт: клетка " + cell + " решётки " + grid);
         }
     }
 
