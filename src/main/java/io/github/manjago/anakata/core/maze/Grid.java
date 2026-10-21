@@ -72,9 +72,7 @@ public final class Grid {
 
     /** Размер решётки по оси {@code axis}. */
     public int size(int axis) {
-        if (axis < 0 || axis >= sizes.length) {
-            throw new IndexOutOfBoundsException("нет оси " + axis);
-        }
+        checkAxis(axis);
         return sizes[axis];
     }
 
@@ -131,6 +129,22 @@ public final class Grid {
     }
 
     /**
+     * Координата клетки {@code index} по оси {@code axis}.
+     *
+     * <p>Дешёвая замена {@link #coordinates(int, int[])} там, где нужна одна ось
+     * и не хочется заводить массив, — например, в счётной схеме ориентиров.
+     *
+     * @param index линейный индекс клетки
+     * @param axis  ось
+     * @return координата по оси
+     */
+    public int coordinate(int index, int axis) {
+        checkCell(index);
+        checkAxis(axis);
+        return (index / strides[axis]) % sizes[axis];
+    }
+
+    /**
      * Индекс соседней клетки в направлении {@code direction}.
      *
      * @return индекс соседа или {@code -1}, если сосед за границей решётки
@@ -139,11 +153,11 @@ public final class Grid {
         checkCell(cell);
         checkDirection(direction);
         int axis = direction.axis();
-        int coordinate = (cell / strides[axis]) % sizes[axis];
+        int position = coordinate(cell, axis);
         if (direction.sign() > 0) {
-            return coordinate + 1 < sizes[axis] ? cell + strides[axis] : -1;
+            return position + 1 < sizes[axis] ? cell + strides[axis] : -1;
         }
-        return coordinate > 0 ? cell - strides[axis] : -1;
+        return position > 0 ? cell - strides[axis] : -1;
     }
 
     /**
@@ -152,6 +166,15 @@ public final class Grid {
     void checkCell(int cell) {
         if (cell < 0 || cell >= cells) {
             throw new IndexOutOfBoundsException("клетка вне решётки: " + cell);
+        }
+    }
+
+    /**
+     * Проверяет, что ось существует.
+     */
+    private void checkAxis(int axis) {
+        if (axis < 0 || axis >= sizes.length) {
+            throw new IndexOutOfBoundsException("нет оси " + axis);
         }
     }
 

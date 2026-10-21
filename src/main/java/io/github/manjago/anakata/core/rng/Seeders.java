@@ -24,7 +24,8 @@ public final class Seeders {
     public enum Branch {
         MAZE("maze"),
         LETTERS("letters"),
-        WORD("word");
+        WORD("word"),
+        LANDMARKS("landmarks");
 
         private final String literal;
 

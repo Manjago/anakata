@@ -28,6 +28,21 @@ class GridTest {
     }
 
     @Test
+    void coordinateMatchesFullDecomposition() {
+        Grid[] grids = {new Grid(3, 4), new Grid(4, 5, 6), new Grid(3, 3, 4, 2)};
+        for (Grid grid : grids) {
+            int[] coordinates = new int[grid.dimensions()];
+            for (int cell = 0; cell < grid.cells(); cell++) {
+                grid.coordinates(cell, coordinates);
+                for (int axis = 0; axis < grid.dimensions(); axis++) {
+                    assertEquals(coordinates[axis], grid.coordinate(cell, axis),
+                            "ось " + axis + " клетки " + cell + " решётки " + grid);
+                }
+            }
+        }
+    }
+
+    @Test
     void indexFollowsFirstAxisFastest() {
         Grid grid = new Grid(3, 4);
         assertEquals(0, grid.index(0, 0));
@@ -110,6 +125,10 @@ class GridTest {
         assertThrows(IndexOutOfBoundsException.class, () -> grid.coordinates(12, coordinates));
         assertThrows(IndexOutOfBoundsException.class, () -> grid.index(3, 0));
         assertThrows(IllegalArgumentException.class, () -> grid.index(1));
+        assertThrows(IndexOutOfBoundsException.class, () -> grid.coordinate(-1, 0));
+        assertThrows(IndexOutOfBoundsException.class, () -> grid.coordinate(12, 0));
+        assertThrows(IndexOutOfBoundsException.class, () -> grid.coordinate(0, -1));
+        assertThrows(IndexOutOfBoundsException.class, () -> grid.coordinate(0, 2));
     }
 
     @Test
