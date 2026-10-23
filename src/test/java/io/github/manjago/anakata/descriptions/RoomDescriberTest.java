@@ -7,12 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.manjago.anakata.core.landmark.Landmark;
 import io.github.manjago.anakata.core.landmark.LandmarkKind;
-import io.github.manjago.anakata.core.landmark.Landmarks;
-import io.github.manjago.anakata.core.maze.BacktrackerMazeGenerator;
+import io.github.manjago.anakata.core.level.Level;
+import io.github.manjago.anakata.core.level.LevelParams;
 import io.github.manjago.anakata.core.maze.Direction;
-import io.github.manjago.anakata.core.maze.Grid;
-import io.github.manjago.anakata.core.maze.Maze;
-import io.github.manjago.anakata.core.rng.Seeders;
 import io.github.manjago.anakata.core.room.RoomView;
 import java.util.HashSet;
 import java.util.List;
@@ -104,29 +101,19 @@ class RoomDescriberTest {
     }
 
     /**
-     * Сквозная протяжка «сид → лабиринт → ориентиры → RoomView → текст»: выходы
-     * вида комнаты совпадают с {@code maze.exits}, ориентир — с {@code landmarks.at},
-     * а число строк описания определяется наличием ориентира. Среди клеток должны
-     * быть и примечательные, и пустые — иначе тест не проверил бы ветку пустой
-     * комнаты.
+     * Сквозная протяжка «параметры → уровень → вид комнаты → текст»: число строк
+     * описания определяется наличием ориентира. Среди клеток должны быть и
+     * примечательные, и пустые — иначе тест не проверил бы ветку пустой комнаты.
+     * Соответствие вида комнаты лабиринту и схеме держит {@code LevelTest}.
      */
     @Test
-    void describesRoomsBuiltFromSeedAndLabyrinth() {
-        long seed = 42L;
-        Grid grid = new Grid(6, 6, 6);
-        Maze maze = new BacktrackerMazeGenerator()
-                .generate(grid, Seeders.branch(seed, Seeders.Branch.MAZE));
-        Landmarks landmarks = new Landmarks(
-                grid, Seeders.derive(seed, Seeders.Branch.LANDMARKS), 2);
+    void describesRoomsBuiltFromLevelParams() {
+        Level level = Level.build(new LevelParams(42L, new int[] {6, 6, 6}, 2));
 
         boolean sawLandmark = false;
         boolean sawEmpty = false;
-        for (int cell = 0; cell < grid.cells(); cell++) {
-            RoomView view = RoomView.of(maze, landmarks, cell);
-            List<Direction> expectedExits = List.of(maze.exits(cell));
-            assertEquals(expectedExits, view.exits(), "выходы клетки " + cell);
-            assertEquals(landmarks.at(cell), view.landmark(), "ориентир клетки " + cell);
-
+        for (int cell = 0; cell < level.grid().cells(); cell++) {
+            RoomView view = level.roomView(cell);
             List<String> lines = DESCRIBER.describe(view);
             assertEquals(view.landmark() == null ? 1 : 2, lines.size(),
                     "число строк для клетки " + cell);

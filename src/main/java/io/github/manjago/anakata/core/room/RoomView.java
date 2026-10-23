@@ -1,9 +1,7 @@
 package io.github.manjago.anakata.core.room;
 
 import io.github.manjago.anakata.core.landmark.Landmark;
-import io.github.manjago.anakata.core.landmark.Landmarks;
 import io.github.manjago.anakata.core.maze.Direction;
-import io.github.manjago.anakata.core.maze.Maze;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -48,23 +46,5 @@ public record RoomView(List<Direction> exits, Landmark landmark) {
             }
         }
         exits = List.copyOf(canonical);
-    }
-
-    /**
-     * Собирает вид клетки из её окружения: выходы лабиринта и ориентир схемы.
-     *
-     * <p>Это мост «данные ядра → {@code RoomView}»: описаниям достаётся ровно то,
-     * что ядро уже посчитало, без доступа к лабиринту и счётной схеме напрямую.
-     *
-     * @param maze      лабиринт уровня
-     * @param landmarks схема ориентиров уровня
-     * @param cell      линейный индекс клетки
-     * @return вид комнаты в этой клетке
-     */
-    public static RoomView of(Maze maze, Landmarks landmarks, int cell) {
-        Objects.requireNonNull(maze, "лабиринт");
-        Objects.requireNonNull(landmarks, "ориентиры");
-        List<Direction> exits = List.of(maze.exits(cell));
-        return new RoomView(exits, landmarks.at(cell));
     }
 }
