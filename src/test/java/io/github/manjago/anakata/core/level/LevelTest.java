@@ -2,11 +2,13 @@ package io.github.manjago.anakata.core.level;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.manjago.anakata.core.landmark.Landmarks;
 import io.github.manjago.anakata.core.maze.BacktrackerMazeGenerator;
+import io.github.manjago.anakata.core.maze.Direction;
 import io.github.manjago.anakata.core.maze.Maze;
 import io.github.manjago.anakata.core.rng.Seeders;
 import io.github.manjago.anakata.core.room.RoomView;
@@ -87,6 +89,55 @@ class LevelTest {
     @Test
     void buildRejectsNullParams() {
         assertThrows(NullPointerException.class, () -> Level.build(null));
+    }
+
+    @Test
+    void stepMovesAlongPassageAndBack() {
+        Level level = Level.build(PARAMS);
+        int start = level.startCell();
+        Direction exit = level.roomView(start).exits().get(0);
+        int destination = level.grid().neighbor(start, exit);
+
+        assertEquals(destination, level.step(start, exit));
+        assertEquals(start, level.step(destination, exit.opposite()));
+    }
+
+    @Test
+    void stepReportsNoPassageIntoWall() {
+        Level level = Level.build(PARAMS);
+        int start = level.startCell();
+        Direction wall = LevelSupport.blockedDirection(level, start);
+        assertNotNull(wall, "у клетки старта не нашлось стены");
+
+        assertEquals(Level.NO_PASSAGE, level.step(start, wall));
+    }
+
+    /** Направление вне размерности — тот же «нет прохода», а не исключение. */
+    @Test
+    void stepReportsNoPassageOutsideDimension() {
+        Level level = Level.build(PARAMS);
+        assertEquals(Level.NO_PASSAGE, level.step(level.startCell(), Direction.UP));
+    }
+
+    @Test
+    void stepRejectsCellOutsideGrid() {
+        Level level = Level.build(PARAMS);
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> level.step(-1, Direction.NORTH));
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> level.step(level.grid().cells(), Direction.NORTH));
+        // Направление вне размерности замыкает проверку прохода, поэтому клетку
+        // здесь валидирует только явный checkCell.
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> level.step(-1, Direction.UP));
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> level.step(level.grid().cells(), Direction.UP));
+    }
+
+    @Test
+    void stepRejectsNullDirection() {
+        Level level = Level.build(PARAMS);
+        assertThrows(NullPointerException.class, () -> level.step(level.startCell(), null));
     }
 
     /**

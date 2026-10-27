@@ -162,8 +162,13 @@ public final class Grid {
 
     /**
      * Проверяет, что клетка в границах решётки.
+     *
+     * <p>Открыт для пакетов ядра над решёткой (сейчас — {@code core.level}):
+     * там клетку проверяют сами, а дублировать границы решётки у себя не хотят.
+     *
+     * @throws IndexOutOfBoundsException если клетка вне решётки
      */
-    void checkCell(int cell) {
+    public void checkCell(int cell) {
         if (cell < 0 || cell >= cells) {
             throw new IndexOutOfBoundsException("клетка вне решётки: " + cell);
         }

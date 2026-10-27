@@ -32,6 +32,15 @@ public final class Level {
     /** Старт игрока — клетка с индексом 0; игрок его не выбирает. */
     private static final int START_CELL = 0;
 
+    /**
+     * Нет прохода: стена, край решётки или направление вне размерности уровня.
+     *
+     * <p>Отдельная константа, а не голый {@code -1}: у {@link Grid#neighbor}
+     * свой {@code -1} — «нет соседа», — и совпадение значений не должно выглядеть
+     * как одно понятие. Здесь же смысл шире: прохода нет по любой причине.
+     */
+    public static final int NO_PASSAGE = -1;
+
     private final LevelParams params;
     private final Grid grid;
     private final Maze maze;
@@ -93,5 +102,30 @@ public final class Level {
     public RoomView roomView(int cell) {
         List<Direction> exits = List.of(maze.exits(cell));
         return new RoomView(exits, landmarks.at(cell));
+    }
+
+    /**
+     * Шаг из клетки в направлении: индекс соседа или {@link #NO_PASSAGE}.
+     *
+     * <p>Проход проверяет сам уровень — лабиринт приватен, и наружу торчит ровно
+     * этот вопрос. {@link #NO_PASSAGE} возвращается и когда прохода нет (стена,
+     * край решётки), и когда направления нет в размерности уровня, — например,
+     * «вверх» в 2D. Для игрока это одно и то же «туда не пройти», поэтому исход
+     * один и исключения нет: разбор слова знает лишь само слово, а размерность —
+     * уровень.
+     *
+     * @param cell      линейный индекс клетки
+     * @param direction направление хода
+     * @return индекс соседней клетки или {@link #NO_PASSAGE}
+     * @throws IndexOutOfBoundsException если клетка вне решётки
+     * @throws NullPointerException      если направление не задано
+     */
+    public int step(int cell, Direction direction) {
+        Objects.requireNonNull(direction, "направление");
+        grid.checkCell(cell);
+        if (direction.axis() >= grid.dimensions() || !maze.hasPassage(cell, direction)) {
+            return NO_PASSAGE;
+        }
+        return grid.neighbor(cell, direction);
     }
 }
