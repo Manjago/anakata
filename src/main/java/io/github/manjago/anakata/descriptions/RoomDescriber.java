@@ -158,7 +158,7 @@ public final class RoomDescriber {
             if (i > 0) {
                 builder.append(i == exits.size() - 1 ? " и " : ", ");
             }
-            builder.append(directionName(exits.get(i)));
+            builder.append(CommandWords.name(exits.get(i)));
         }
         return builder.append('.').toString();
     }
@@ -169,23 +169,6 @@ public final class RoomDescriber {
             return "Тупик";
         }
         return exits == 2 ? "Коридор" : "Развилка";
-    }
-
-    /**
-     * Русское название направления. {@code switch} без {@code default}: новая ось
-     * должна сломать сборку, а не остаться без слова.
-     */
-    static String directionName(Direction direction) {
-        return switch (direction) {
-            case NORTH -> "север";
-            case SOUTH -> "юг";
-            case EAST -> "восток";
-            case WEST -> "запад";
-            case UP -> "вверх";
-            case DOWN -> "вниз";
-            case ANA -> "ана";
-            case KATA -> "ката";
-        };
     }
 
     /** Форма таблицы — часть обещания DESIGN: у каждого вида ровно {@code VARIANTS} фраз. */

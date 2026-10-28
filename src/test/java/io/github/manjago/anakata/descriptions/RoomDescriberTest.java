@@ -21,16 +21,6 @@ class RoomDescriberTest {
     private static final RoomDescriber DESCRIBER = new RoomDescriber();
 
     @Test
-    void everyDirectionHasADistinctName() {
-        Set<String> names = new HashSet<>();
-        for (Direction direction : Direction.values()) {
-            String name = RoomDescriber.directionName(direction);
-            assertFalse(name.isBlank(), "пустое имя направления " + direction);
-            assertTrue(names.add(name), "повтор имени направления: " + name);
-        }
-    }
-
-    @Test
     void deadEndHasOneExit() {
         assertEquals(List.of("Тупик. Выход: север."), describe(Direction.NORTH));
     }
