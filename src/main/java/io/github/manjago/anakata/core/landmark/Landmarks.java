@@ -1,7 +1,6 @@
 package io.github.manjago.anakata.core.landmark;
 
 import io.github.manjago.anakata.core.maze.Grid;
-import io.github.manjago.anakata.core.rng.Seeders;
 import io.github.manjago.anakata.core.rng.SplitMix64;
 import java.util.Objects;
 

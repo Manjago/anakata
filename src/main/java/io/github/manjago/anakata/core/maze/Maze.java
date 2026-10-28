@@ -96,8 +96,8 @@ public final class Maze {
             throw new IllegalArgumentException(
                     "нет соседа из клетки " + cell + " в направлении " + direction);
         }
-        masks[cell] |= 1 << direction.bit();
-        masks[neighbor] |= 1 << direction.opposite().bit();
+        masks[cell] |= (byte) (1 << direction.bit());
+        masks[neighbor] |= (byte) (1 << direction.opposite().bit());
     }
 
     /**
