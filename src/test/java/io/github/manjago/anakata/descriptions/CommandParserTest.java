@@ -1,13 +1,16 @@
 package io.github.manjago.anakata.descriptions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.manjago.anakata.core.game.Command;
 import io.github.manjago.anakata.core.maze.Direction;
 import io.github.manjago.anakata.descriptions.CommandParser.ParseResult;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.junit.jupiter.api.Test;
 
 class CommandParserTest {
@@ -38,6 +41,24 @@ class CommandParserTest {
         for (String word : CommandWords.helpWords()) {
             assertEquals(new ParseResult.Help(), PARSER.parse(word), "слово " + word);
         }
+    }
+
+    @Test
+    void exitWordsAreRecognized() {
+        for (String word : CommandWords.exitWords()) {
+            assertEquals(new ParseResult.Exit(), PARSER.parse(word), "слово " + word);
+        }
+    }
+
+    /** {@code isExit} нормализует строку так же, как {@code parse}. */
+    @Test
+    void isExitRecognizesExitWordsRegardlessOfCaseAndSpaces() {
+        for (String word : CommandWords.exitWords()) {
+            assertTrue(PARSER.isExit("  " + word.toUpperCase(Locale.ROOT) + "  "), word);
+        }
+        assertFalse(PARSER.isExit("север"));
+        assertFalse(PARSER.isExit(""));
+        assertFalse(PARSER.isExit("  "));
     }
 
     @Test

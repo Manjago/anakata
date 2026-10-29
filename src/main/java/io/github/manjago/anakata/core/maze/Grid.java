@@ -36,7 +36,7 @@ public final class Grid {
         for (int axis = 0; axis < sizes.length; axis++) {
             if (sizes[axis] < 2) {
                 throw new IllegalArgumentException(
-                        "размер оси " + axis + " меньше 2: " + sizes[axis]);
+                        "размер №" + (axis + 1) + " меньше 2: " + sizes[axis]);
             }
             if (total > Integer.MAX_VALUE / sizes[axis]) {
                 throw new IllegalArgumentException("слишком много клеток в решётке");
@@ -104,7 +104,7 @@ public final class Grid {
             int coordinate = coordinates[axis];
             if (coordinate < 0 || coordinate >= sizes[axis]) {
                 throw new IndexOutOfBoundsException(
-                        "координата " + coordinate + " вне оси " + axis);
+                        "координата " + coordinate + " вне оси №" + (axis + 1));
             }
             index += coordinate * strides[axis];
         }
@@ -179,7 +179,7 @@ public final class Grid {
      */
     private void checkAxis(int axis) {
         if (axis < 0 || axis >= sizes.length) {
-            throw new IndexOutOfBoundsException("нет оси " + axis);
+            throw new IndexOutOfBoundsException("нет оси №" + (axis + 1));
         }
     }
 

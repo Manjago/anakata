@@ -140,6 +140,26 @@ class LevelTest {
         assertThrows(NullPointerException.class, () -> level.step(level.startCell(), null));
     }
 
+    /** {@code landmarkCount} согласован с тем, что показывает {@code roomView}. */
+    @Test
+    void landmarkCountMatchesRoomViews() {
+        Level level = Level.build(new LevelParams(42L, new int[] {5, 5, 5}, 3));
+        int expected = 0;
+        for (int cell = 0; cell < level.grid().cells(); cell++) {
+            if (level.roomView(cell).landmark() != null) {
+                expected++;
+            }
+        }
+        assertEquals(expected, level.landmarkCount());
+    }
+
+    /** Плотность 1 делает приметной каждую клетку — верхняя граница счёта. */
+    @Test
+    void densityOneMarksEveryCell() {
+        Level level = Level.build(new LevelParams(1L, new int[] {3, 3}, 1));
+        assertEquals(level.grid().cells(), level.landmarkCount());
+    }
+
     /**
      * Правила держат {@code Grid} и {@code Landmarks}, поэтому сборка падает на
      * них: размерность вне 2–4, размер оси меньше 2 и плотность меньше 1.

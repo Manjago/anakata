@@ -3,6 +3,7 @@ package io.github.manjago.anakata.descriptions;
 import io.github.manjago.anakata.core.game.Command;
 import io.github.manjago.anakata.core.maze.Direction;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -12,10 +13,11 @@ import java.util.Objects;
  * {@link CommandWords}.
  *
  * <p>Вход — одна строка, на выходе {@link ParseResult}: команда ядра, запрос помощи,
- * пустой ввод или «не понял». Ядро про строки не знает — слова живут в пакете описаний. Слово
- * помощи здесь по той же причине, что и остальные: это ввод игрока. Но поведение
- * (что показать) — дело адаптера, {@code descriptions} лишь распознаёт запрос
- * (см. DESIGN.md, «Разбор строки»).
+ * выход из игры, пустой ввод или «не понял». Ядро про строки не знает — слова живут
+ * в пакете описаний. Слова помощи и выхода здесь по той же причине, что и
+ * остальные: это ввод игрока. Но поведение (что показать, выйти из цикла) — дело
+ * адаптера, {@code descriptions} лишь распознаёт запрос (см. DESIGN.md, «Разбор
+ * строки»).
  *
  * <p>Разбор строгий: строка обрезается по краям, приводится к нижнему регистру и
  * сравнивается со словом целиком (подробности — у {@link #normalize}). Ни
@@ -32,7 +34,8 @@ public final class CommandParser {
      * неразобранное слово.
      */
     public sealed interface ParseResult
-            permits ParseResult.Parsed, ParseResult.Help, ParseResult.Empty, ParseResult.Unknown {
+            permits ParseResult.Parsed, ParseResult.Help, ParseResult.Exit,
+                    ParseResult.Empty, ParseResult.Unknown {
 
         /** Команда ядра; сейчас это всегда ход. */
         record Parsed(Command command) implements ParseResult {
@@ -45,6 +48,13 @@ public final class CommandParser {
 
         /** Запрос помощи; что показать — решает адаптер. */
         record Help() implements ParseResult {
+        }
+
+        /**
+         * Запрос выхода из игры; что делать (завершить цикл) — решает адаптер,
+         * ядро про выход не знает.
+         */
+        record Exit() implements ParseResult {
         }
 
         /**
@@ -85,7 +95,24 @@ public final class CommandParser {
         if (CommandWords.isHelp(word)) {
             return new ParseResult.Help();
         }
+        if (CommandWords.isExit(word)) {
+            return new ParseResult.Exit();
+        }
         return new ParseResult.Unknown(word);
+    }
+
+    /**
+     * Является ли строка словом выхода — с той же нормализацией, что и
+     * {@link #parse}. Нужно адаптерам, которые распознают выход до полного
+     * разбора команды: консоль так выходит на этапе расспроса параметров.
+     *
+     * @param line строка ввода
+     * @return {@code true}, если строка — одно из {@link CommandWords#exitWords()}
+     * @throws NullPointerException если строка не задана
+     */
+    public boolean isExit(String line) {
+        Objects.requireNonNull(line, "строка");
+        return CommandWords.isExit(normalize(line));
     }
 
     /**
@@ -117,8 +144,9 @@ public final class CommandParser {
 
     /**
      * Таблица «слово → направление» из канонических слов и алиасов. Повтор слова
-     * или пересечение со словом помощи — ошибка контента, а не хода игры, поэтому
-     * она падает при загрузке класса, а не выдаёт молча чужое направление.
+     * или пересечение со словом помощи либо выхода — ошибка контента, а не хода
+     * игры, поэтому она падает при загрузке класса, а не выдаёт молча чужое
+     * направление.
      */
     private static Map<String, Direction> buildDirectionWords() {
         Map<String, Direction> words = new HashMap<>();
@@ -128,12 +156,17 @@ public final class CommandParser {
                 addWord(words, alias, direction);
             }
         }
-        for (String helpWord : CommandWords.helpWords()) {
-            if (words.containsKey(helpWord)) {
-                throw new IllegalStateException("слово помощи пересекается с ходом: " + helpWord);
+        checkNoOverlap(words, CommandWords.helpWords(), "помощи");
+        checkNoOverlap(words, CommandWords.exitWords(), "выхода");
+        return Map.copyOf(words);
+    }
+
+    private static void checkNoOverlap(Map<String, Direction> words, List<String> other, String what) {
+        for (String word : other) {
+            if (words.containsKey(word)) {
+                throw new IllegalStateException("слово " + what + " пересекается с ходом: " + word);
             }
         }
-        return Map.copyOf(words);
     }
 
     private static void addWord(Map<String, Direction> words, String word, Direction direction) {

@@ -28,9 +28,16 @@ public final class CommandWords {
     /** Каноническое слово помощи. */
     public static final String HELP_NAME = "помощь";
 
+    /** Каноническое слово выхода из игры. Действие — за адаптером. */
+    public static final String EXIT_NAME = "выход";
+
     private static final List<String> HELP_ALIASES = List.of("help", "?");
 
+    private static final List<String> EXIT_ALIASES = List.of("exit", "q");
+
     private static final List<String> HELP_WORDS = buildHelpWords();
+
+    private static final List<String> EXIT_WORDS = buildExitWords();
 
     private CommandWords() {
     }
@@ -76,16 +83,31 @@ public final class CommandWords {
         return HELP_ALIASES;
     }
 
+    /** Все слова выхода: каноническое и алиасы. */
+    public static List<String> exitWords() {
+        return EXIT_WORDS;
+    }
+
+    /** Короткие алиасы выхода. */
+    public static List<String> exitAliases() {
+        return EXIT_ALIASES;
+    }
+
     /** Является ли слово запросом помощи — любое из {@link #helpWords()}. */
     public static boolean isHelp(String word) {
         return HELP_WORDS.contains(word);
     }
 
+    /** Является ли слово выходом из игры — любое из {@link #exitWords()}. */
+    public static boolean isExit(String word) {
+        return EXIT_WORDS.contains(word);
+    }
+
     /**
      * Текст помощи списком строк для уровня заданной размерности: канонические
-     * слова и алиасы ходов, доступных в этой размерности, и слово помощи.
-     * Генерируется из этой же таблицы, поэтому подсказка не разъедется с разбором.
-     * «Выход» и админ-команды сюда не входят — их дописывает адаптер.
+     * слова и алиасы ходов, доступных в этой размерности, а также слова помощи и
+     * выхода. Генерируется из этой же таблицы, поэтому подсказка не разъедется с
+     * разбором. Админ-команды сюда не входят — их дописывает адаптер.
      *
      * @param dimensions размерность уровня, от 2 до 4
      * @return строки помощи в порядке показа
@@ -112,13 +134,21 @@ public final class CommandWords {
         }
         return List.of(
                 moves.append('.').toString(),
-                "Подсказка: " + HELP_NAME + " (" + String.join(", ", HELP_ALIASES) + ").");
+                "Подсказка: " + HELP_NAME + " (" + String.join(", ", HELP_ALIASES) + ").",
+                "Закончить игру: " + EXIT_NAME + " (" + String.join(", ", EXIT_ALIASES) + ").");
     }
 
     private static List<String> buildHelpWords() {
         List<String> words = new ArrayList<>(1 + HELP_ALIASES.size());
         words.add(HELP_NAME);
         words.addAll(HELP_ALIASES);
+        return List.copyOf(words);
+    }
+
+    private static List<String> buildExitWords() {
+        List<String> words = new ArrayList<>(1 + EXIT_ALIASES.size());
+        words.add(EXIT_NAME);
+        words.addAll(EXIT_ALIASES);
         return List.copyOf(words);
     }
 }

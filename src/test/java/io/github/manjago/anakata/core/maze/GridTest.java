@@ -2,6 +2,7 @@ package io.github.manjago.anakata.core.maze;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -101,6 +102,33 @@ class GridTest {
     void rejectsTooSmallAxis() {
         assertThrows(IllegalArgumentException.class, () -> new Grid(1, 3));
         assertThrows(IllegalArgumentException.class, () -> new Grid(3, 0));
+    }
+
+    /**
+     * Сообщение называет позицию с единицы и само значение: «2 1» — ошибка во
+     * втором числе, а не в «оси 1» (нулевой по счёту).
+     */
+    @Test
+    void tooSmallAxisMessageNamesPositionFromOne() {
+        IllegalArgumentException failure = assertThrows(IllegalArgumentException.class,
+                () -> new Grid(2, 1));
+
+        assertTrue(failure.getMessage().contains("№2"), failure.getMessage());
+        assertTrue(failure.getMessage().contains(": 1"), failure.getMessage());
+    }
+
+    /** Та же однозначность у координаты и у несуществующей оси. */
+    @Test
+    void axisMessagesNamePositionFromOne() {
+        Grid grid = new Grid(3, 4);
+
+        IndexOutOfBoundsException outOfRange = assertThrows(IndexOutOfBoundsException.class,
+                () -> grid.index(0, 5));
+        assertTrue(outOfRange.getMessage().contains("№2"), outOfRange.getMessage());
+
+        IndexOutOfBoundsException noAxis = assertThrows(IndexOutOfBoundsException.class,
+                () -> grid.coordinate(0, 2));
+        assertTrue(noAxis.getMessage().contains("№3"), noAxis.getMessage());
     }
 
     @Test

@@ -41,6 +41,11 @@ class CommandWordsTest {
         for (String alias : helpAliases) {
             assertAliasForm(alias);
         }
+        List<String> exitAliases = CommandWords.exitAliases();
+        assertFalse(exitAliases.isEmpty(), "у выхода нет алиасов");
+        for (String alias : exitAliases) {
+            assertAliasForm(alias);
+        }
     }
 
     /** Таблица слов без коллизий: ни одно слово не принадлежит двум командам. */
@@ -57,6 +62,9 @@ class CommandWordsTest {
         for (String helpWord : CommandWords.helpWords()) {
             assertTrue(words.add(helpWord), "повтор слова помощи: " + helpWord);
         }
+        for (String exitWord : CommandWords.exitWords()) {
+            assertTrue(words.add(exitWord), "повтор слова выхода: " + exitWord);
+        }
     }
 
     /**
@@ -71,6 +79,7 @@ class CommandWordsTest {
             Set<String> tokens = tokens(String.join("\n", CommandWords.help(dimensions)));
             assertFalse(tokens.isEmpty(), "пустая помощь для " + dimensions + "D");
             assertTrue(tokens.contains(CommandWords.HELP_NAME), "нет слова помощи в " + dimensions + "D");
+            assertTrue(tokens.contains(CommandWords.EXIT_NAME), "нет слова выхода в " + dimensions + "D");
             for (Direction direction : Direction.values()) {
                 boolean expected = direction.axis() < dimensions;
                 String name = CommandWords.name(direction);
