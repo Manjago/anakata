@@ -95,7 +95,7 @@ class StartupPromptTest {
     void sizesPromptShowsTheDefault() {
         Result result = run("\n1\n2\n");
 
-        assertTrue(result.output().contains("пусто — " + sizesText(StartupPrompt.DEFAULT_SIZES)),
+        assertTrue(result.output().contains("пусто — " + sizesText(StartupPrompt.defaultSizes())),
                 result.output());
     }
 
@@ -159,7 +159,7 @@ class StartupPromptTest {
         Result result = run("");
 
         assertTrue(result.params().isEmpty());
-        assertTrue(result.output().contains(ConsoleText.askSizes(StartupPrompt.DEFAULT_SIZES)),
+        assertTrue(result.output().contains(ConsoleText.askSizes(StartupPrompt.defaultSizes())),
                 result.output());
     }
 

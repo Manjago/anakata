@@ -55,7 +55,15 @@ public final class StartupPrompt {
     static final int DEFAULT_DENSITY = 5;
 
     /** Размеры по умолчанию; {@link ConsoleText#askSizes} печатает их из этого поля. */
-    static final int[] DEFAULT_SIZES = {6, 6};
+    private static final int[] DEFAULT_SIZES = {6, 6};
+
+    /**
+     * Копия размеров по умолчанию. Отдаём копию, а не сам массив: иначе тест (или
+     * любой класс пакета) мог бы записать в него значение и тихо поменять дефолт.
+     */
+    static int[] defaultSizes() {
+        return DEFAULT_SIZES.clone();
+    }
 
     private final BufferedReader in;
     private final PrintWriter out;
