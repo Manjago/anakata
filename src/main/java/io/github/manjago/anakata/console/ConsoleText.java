@@ -32,7 +32,7 @@ public final class ConsoleText {
      * @return строка приглашения
      */
     public static String askSizes(int[] defaultSizes) {
-        return "Размеры по осям (пусто — " + sizes(defaultSizes) + "): ";
+        return "Размеры по осям (пусто — " + numbers(defaultSizes) + "): ";
     }
 
     /**
@@ -47,14 +47,23 @@ public final class ConsoleText {
                 + defaultDensity + "): ";
     }
 
-    /** Размеры через пробел: «6 6». */
-    private static String sizes(int[] defaultSizes) {
+    /**
+     * Числа через пробел: «6 6» или координаты «1 2 3».
+     *
+     * <p>Единая склейка для размеров, координат и их подсказок: свой цикл в каждом
+     * месте разъехался бы (пробелы, порядок). Разделитель — обычный пробел;
+     * скобки, если нужны, добавляет вызывающий.
+     *
+     * @param values числа
+     * @return строка чисел через пробел
+     */
+    static String numbers(int[] values) {
         StringBuilder text = new StringBuilder();
-        for (int axis = 0; axis < defaultSizes.length; axis++) {
-            if (axis > 0) {
+        for (int value : values) {
+            if (text.length() > 0) {
                 text.append(' ');
             }
-            text.append(defaultSizes[axis]);
+            text.append(value);
         }
         return text.toString();
     }

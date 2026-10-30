@@ -53,7 +53,7 @@ public final class ConsoleApplication {
         }
         Level level = Level.build(params.get());
         out.println(ConsoleText.level(level));
-        new ConsoleGame(in, out, new GameSession(level)).run();
+        new ConsoleGame(in, out, new GameSession(level), randomSeed).run();
     }
 
     private static boolean wantsHelp(String[] args) {

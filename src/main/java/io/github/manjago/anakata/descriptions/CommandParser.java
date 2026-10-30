@@ -124,8 +124,17 @@ public final class CommandParser {
      *
      * <p>Регистр опускаем через {@link Locale#ROOT}: иначе локаль с другим правилом
      * (например, турецкая) сделала бы разбор недетерминированным.
+     *
+     * <p>Открыт адаптерам, разбирающим собственные слова по тем же правилам, что и
+     * язык мира (например, консольным админ-командам): одна нормализация на всех,
+     * чтобы разбор не разъехался.
+     *
+     * @param line строка ввода
+     * @return строка без краевых пробелов в нижнем регистре
+     * @throws NullPointerException если строка не задана
      */
-    private static String normalize(String line) {
+    public static String normalize(String line) {
+        Objects.requireNonNull(line, "строка");
         int from = 0;
         int to = line.length();
         while (from < to && isSpace(line.charAt(from))) {

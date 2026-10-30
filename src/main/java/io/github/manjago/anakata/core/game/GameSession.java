@@ -42,6 +42,22 @@ public final class GameSession {
         return cell;
     }
 
+    /**
+     * Переносит игрока в заданную клетку, не проверяя проходов.
+     *
+     * <p>Это не команда игрока (в {@link Command} её нет, и ядро про слово
+     * «телепорт» не знает), а возможность для адаптера-инструмента: консоли
+     * администратора позволено прыгать куда угодно для отладки. Переход через
+     * стену здесь намеренный — ценность команды именно в этом.
+     *
+     * @param cell линейный индекс клетки
+     * @throws IndexOutOfBoundsException если клетка вне решётки
+     */
+    public void teleport(int cell) {
+        level.grid().checkCell(cell);
+        this.cell = cell;
+    }
+
     /** Вид текущей комнаты — для показа до первой команды. */
     public RoomView roomView() {
         return level.roomView(cell);

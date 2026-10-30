@@ -154,6 +154,28 @@ class GameSessionTest {
         assertThrows(NullPointerException.class, () -> new GameSession(null));
     }
 
+    /** Телепорт переносит в любую клетку, даже за стену, — это админский прыжок. */
+    @Test
+    void teleportMovesToAnyCellEvenThroughWalls() {
+        Level level = Level.build(PARAMS);
+        GameSession session = new GameSession(level);
+        int target = level.grid().cells() - 1;
+
+        session.teleport(target);
+
+        assertEquals(target, session.cell());
+        assertEquals(level.roomView(target), session.roomView());
+    }
+
+    @Test
+    void teleportOutsideGridThrows() {
+        Level level = Level.build(PARAMS);
+        GameSession session = new GameSession(level);
+
+        assertThrows(IndexOutOfBoundsException.class, () -> session.teleport(level.grid().cells()));
+        assertThrows(IndexOutOfBoundsException.class, () -> session.teleport(-1));
+    }
+
     @Test
     void executeRejectsNullCommand() {
         GameSession session = new GameSession(Level.build(PARAMS));
