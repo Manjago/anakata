@@ -1,5 +1,6 @@
 package io.github.manjago.anakata.descriptions;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -86,6 +87,44 @@ class CommandParserTest {
     @Test
     void parserDoesNotKnowTheDimension() {
         assertEquals(move(Direction.ANA), PARSER.parse("ана"));
+    }
+
+    /** {@code words} нормализует как {@code parse} и делит по сериям пробелов. */
+    @Test
+    void wordsSplitsOnOrdinarySpacesAndNormalizes() {
+        assertArrayEquals(new String[] {"север", "1"}, CommandParser.words("  СЕВЕР  1 "));
+    }
+
+    /** Неразрывный пробел внутри строки — такой же разделитель, как обычный. */
+    @Test
+    void wordsTreatsNonBreakingSpaceAsSeparator() {
+        assertArrayEquals(new String[] {"телепорт", "1", "2"},
+                CommandParser.words("телепорт\u00A01\u00A02"));
+    }
+
+    @Test
+    void wordsSplitsOnTabs() {
+        assertArrayEquals(new String[] {"a", "b"}, CommandParser.words("a\tb"));
+    }
+
+    /** Серии разделителей дают одно разделение, а не пустые слова. */
+    @Test
+    void wordsCollapsesRunsOfSeparators() {
+        assertArrayEquals(new String[] {"a", "b"},
+                CommandParser.words(" \u00A0a\t\t b\u00A0 "));
+    }
+
+    /** Пустая и пробельная строка — пустой массив, а не {@code [""]}. */
+    @Test
+    void wordsOfBlankInputIsEmpty() {
+        assertArrayEquals(new String[0], CommandParser.words(""));
+        assertArrayEquals(new String[0], CommandParser.words("   "));
+        assertArrayEquals(new String[0], CommandParser.words("\u00A0\t "));
+    }
+
+    @Test
+    void wordsRejectsNull() {
+        assertThrows(NullPointerException.class, () -> CommandParser.words(null));
     }
 
     @Test

@@ -2,6 +2,7 @@ package io.github.manjago.anakata.descriptions;
 
 import io.github.manjago.anakata.core.game.Command;
 import io.github.manjago.anakata.core.maze.Direction;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -144,6 +145,41 @@ public final class CommandParser {
             to--;
         }
         return line.substring(from, to).toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * Нормализует строку тем же {@link #normalize} и делит её на слова по сериям
+     * пробелов — тем же определением пробела, что и у {@code normalize}.
+     *
+     * <p>Метод для адаптеров, которые токенизируют ввод: админ-команды, стартовый
+     * расспрос. {@link #parse} им не пользуется: слова движения внутри строки не
+     * делятся, «на север» остаётся неразобранным словом.
+     *
+     * @param line строка ввода
+     * @return слова; пустой массив для пустой строки или строки из одних пробелов
+     * @throws NullPointerException если строка не задана
+     */
+    public static String[] words(String line) {
+        String normalized = normalize(line);
+        if (normalized.isEmpty()) {
+            return new String[0];
+        }
+        List<String> words = new ArrayList<>();
+        int start = -1;
+        for (int index = 0; index < normalized.length(); index++) {
+            if (isSpace(normalized.charAt(index))) {
+                if (start >= 0) {
+                    words.add(normalized.substring(start, index));
+                    start = -1;
+                }
+            } else if (start < 0) {
+                start = index;
+            }
+        }
+        if (start >= 0) {
+            words.add(normalized.substring(start));
+        }
+        return words.toArray(new String[0]);
     }
 
     /** Пробел по {@code strip()} или разрядный пробел (в том числе неразрывный). */

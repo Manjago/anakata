@@ -40,6 +40,22 @@ class AdminParserTest {
         assertEquals(parsed(new AdminCommand.Teleport(List.of(3, 4, 5))), parser.parse("tp 3 4 5"));
     }
 
+    /** Неразрывный пробел между токенами — тот же разделитель, что и обычный. */
+    @Test
+    void readsTeleportWithNonBreakingSpaceBetweenTokens() {
+        assertEquals(parsed(new AdminCommand.Teleport(List.of(1, 2))),
+                parser.parse("телепорт\u00A01\u00A02"));
+        assertEquals(parsed(new AdminCommand.Teleport(List.of(3, 4, 5))),
+                parser.parse("tp\u00A03\u00A04\u00A05"));
+    }
+
+    /** Смешанные разделители в одной строке делят её так же. */
+    @Test
+    void readsTeleportWithMixedWhitespaceBetweenTokens() {
+        assertEquals(parsed(new AdminCommand.Teleport(List.of(1, 2, 3))),
+                parser.parse("телепорт\u00A01\t2\u00A03"));
+    }
+
     /** Голова команды — «новый»; хвост «уровень» необязателен, как и сид. */
     @Test
     void readsNewLevelVariants() {

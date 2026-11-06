@@ -53,6 +53,45 @@ class StartupPromptTest {
         assertEquals(StartupPrompt.DEFAULT_DENSITY, result.params().orElseThrow().landmarkInEvery());
     }
 
+    /** Неразрывный пробел внутри размеров — тот же разделитель, что и обычный. */
+    @Test
+    void sizesWithNonBreakingSpaceInsideAreRead() {
+        Result result = run("6\u00A06\n1\n2\n");
+
+        assertEquals(Optional.of(new LevelParams(1L, new int[] {6, 6}, 2)), result.params());
+    }
+
+    /** Неразрывный пробел по краям размеров обрезается, как обычный. */
+    @Test
+    void sizesWithNonBreakingSpaceOnTheEdgesAreRead() {
+        Result result = run("\u00A06 6\u00A0\n1\n2\n");
+
+        assertEquals(Optional.of(new LevelParams(1L, new int[] {6, 6}, 2)), result.params());
+    }
+
+    @Test
+    void seedWithNonBreakingSpaceOnTheEdgesIsRead() {
+        Result result = run("3 3\n\u00A042\u00A0\n2\n");
+
+        assertEquals(42L, result.params().orElseThrow().seed());
+    }
+
+    @Test
+    void densityWithNonBreakingSpaceOnTheEdgesIsRead() {
+        Result result = run("3 3\n1\n\u00A07\u00A0\n");
+
+        assertEquals(7, result.params().orElseThrow().landmarkInEvery());
+    }
+
+    /** Строка из одного неразрывного пробела — пустое поле со значением по умолчанию. */
+    @Test
+    void loneNonBreakingSpaceFallsBackToDefaults() {
+        Result result = run("\u00A0\n\u00A0\n\u00A0\n");
+
+        assertEquals(Optional.of(new LevelParams(RANDOM_SEED, new int[] {6, 6},
+                StartupPrompt.DEFAULT_DENSITY)), result.params());
+    }
+
     @Test
     void repeatedInvalidSizesAreReasked() {
         Result result = run("6\n1 1\na b\n5 5 5 5 5\n3 3\n1\n2\n");

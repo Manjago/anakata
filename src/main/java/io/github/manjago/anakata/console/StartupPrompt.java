@@ -110,11 +110,11 @@ public final class StartupPrompt {
             if (line.isEmpty()) {
                 return Optional.empty();
             }
-            String trimmed = line.get().strip();
-            if (trimmed.isEmpty()) {
+            String normalized = CommandParser.normalize(line.get());
+            if (normalized.isEmpty()) {
                 return Optional.of(DEFAULT_SIZES.clone());
             }
-            Optional<int[]> sizes = parseNumbers(trimmed);
+            Optional<int[]> sizes = parseNumbers(normalized);
             if (sizes.isEmpty()) {
                 out.println(ConsoleText.sizesNotNumbers());
                 continue;
@@ -134,12 +134,12 @@ public final class StartupPrompt {
             if (line.isEmpty()) {
                 return Optional.empty();
             }
-            String trimmed = line.get().strip();
-            if (trimmed.isEmpty()) {
+            String normalized = CommandParser.normalize(line.get());
+            if (normalized.isEmpty()) {
                 return Optional.of(randomSeed.getAsLong());
             }
             try {
-                return Optional.of(Long.parseLong(trimmed));
+                return Optional.of(Long.parseLong(normalized));
             } catch (NumberFormatException notANumber) {
                 out.println(ConsoleText.SEED_HINT);
             }
@@ -152,13 +152,13 @@ public final class StartupPrompt {
             if (line.isEmpty()) {
                 return Optional.empty();
             }
-            String trimmed = line.get().strip();
-            if (trimmed.isEmpty()) {
+            String normalized = CommandParser.normalize(line.get());
+            if (normalized.isEmpty()) {
                 return Optional.of(DEFAULT_DENSITY);
             }
             int density;
             try {
-                density = Integer.parseInt(trimmed);
+                density = Integer.parseInt(normalized);
             } catch (NumberFormatException notANumber) {
                 out.println(ConsoleText.DENSITY_HINT);
                 continue;
@@ -195,8 +195,8 @@ public final class StartupPrompt {
     }
 
     /** Все пробелы — числа через пробел; пусто, если хоть один токен не число. */
-    private static Optional<int[]> parseNumbers(String trimmed) {
-        String[] parts = trimmed.split("\\s+");
+    private static Optional<int[]> parseNumbers(String normalized) {
+        String[] parts = CommandParser.words(normalized);
         int[] numbers = new int[parts.length];
         for (int index = 0; index < parts.length; index++) {
             try {

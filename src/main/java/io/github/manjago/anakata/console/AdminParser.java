@@ -131,11 +131,10 @@ public final class AdminParser {
      */
     public Result parse(String line) {
         Objects.requireNonNull(line, "строка");
-        String normalized = CommandParser.normalize(line);
-        if (normalized.isEmpty()) {
+        String[] tokens = CommandParser.words(line);
+        if (tokens.length == 0) {
             return new Result.NotAdmin();
         }
-        String[] tokens = normalized.split("\\s+");
         String head = tokens[0];
         if (matchesHead(head, TELEPORT_NAME, TELEPORT_ALIASES)) {
             return parseTeleport(tokens);
